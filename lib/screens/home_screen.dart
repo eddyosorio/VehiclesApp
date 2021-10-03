@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:vehicles_app/models/token.dart';
 import 'package:vehicles_app/screens/procedures_screen.dart';
+import 'package:vehicles_app/screens/vehicle_types_screen.dart';
+
+import 'brands_screen.dart';
+import 'document_types_screen.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -70,12 +74,12 @@ class _HomeScreenState extends State<HomeScreen> {
             leading: Icon(Icons.two_wheeler),
             title: const Text('Marcas'),
             onTap: () { 
-             /* Navigator.push(
+             Navigator.push(
                 context, 
                 MaterialPageRoute(
                   builder: (context) => BrandsScreen(token: widget.token,)
                 )
-              );*/
+              );
             },
           ),
           ListTile(
@@ -94,24 +98,24 @@ class _HomeScreenState extends State<HomeScreen> {
             leading: Icon(Icons.badge),
             title: const Text('Tipos de Documento'),
             onTap: () { 
-              /*Navigator.push(
+              Navigator.push(
                 context, 
                 MaterialPageRoute(
                   builder: (context) => DocumentTypesScreen(token: widget.token,)
                 )
-              );*/
+              );
             },
           ),
           ListTile(
             leading: Icon(Icons.toys),
             title: const Text('Tipos de Vehículos'),
             onTap: () { 
-             /* Navigator.push(
+              Navigator.push(
                 context, 
                 MaterialPageRoute(
                   builder: (context) => VehicleTypesScreen(token: widget.token,)
                 )
-              );*/
+              );
             },
           ),
           ListTile(
