@@ -1,13 +1,19 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 
 import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/api_helper.dart';
+import 'package:vehicles_app/models/brand.dart';
 import 'package:vehicles_app/models/response.dart';
 import 'package:vehicles_app/models/token.dart';
 import 'package:vehicles_app/models/user.dart';
+import 'package:vehicles_app/models/vehicle.dart';
+import 'package:vehicles_app/models/vehicle_type.dart';
 import 'package:vehicles_app/screens/user_screen.dart';
+//import 'package:vehicles_app/screens/vehicle_info_screen.dart';
+//import 'package:vehicles_app/screens/vehicle_screen.dart';
 
 class UserInfoScreen extends StatefulWidget {
   final Token token;
@@ -43,7 +49,21 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () => _goAdd(),
+        onPressed: () => _goAddVehicle(Vehicle(
+          brand: Brand(id: 0, description: ''), 
+          color: '', 
+          histories: [], 
+          historiesCount: 0, 
+          id: 0, 
+          imageFullPath: '', 
+          line: '', 
+          model: 2021, 
+          plaque: '', 
+          remarks: '', 
+          vehiclePhotos: [], 
+          vehiclePhotosCount: 0, 
+          vehicleType: VehicleType(id: 0, description: '')
+        )),
       ),
     );
   }
@@ -58,12 +78,18 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
             children: <Widget>[
               ClipRRect(
                 borderRadius: BorderRadius.circular(50),
-                child: FadeInImage(
-                  placeholder: AssetImage('assets/vehicles_logo.png'), 
-                  image: NetworkImage(_user.imageFullPath),
-                  width: 100,
+                child: CachedNetworkImage(
+                  imageUrl: _user.imageFullPath,
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                  fit: BoxFit.cover,
                   height: 100,
-                  fit: BoxFit.cover
+                  width: 100,
+                  placeholder: (context, url) => Image(
+                    image: AssetImage('assets/vehicles_logo.png'),
+                    fit: BoxFit.cover,
+                    height: 100,
+                    width: 100,
+                  ),
                 ),
               ),
               Positioned(
@@ -270,7 +296,37 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
     });
   }
 
-  _goAdd() {}
+  void _goVehicle(Vehicle vehicle) async { 
+    String? result = await  Navigator.push(
+      context, 
+      MaterialPageRoute(
+        builder: (context) => UserScreen(
+          token: widget.token, 
+          user: _user, 
+         // vehicle: vehicle
+        ) 
+      )
+    );
+    if (result == 'yes') {
+      _getUser();
+    }
+  }
+
+  void _goAddVehicle(Vehicle vehicle) async { 
+    String? result = await  Navigator.push(
+      context, 
+      MaterialPageRoute(
+        builder: (context) => UserScreen(
+          token: widget.token, 
+          user: _user, 
+          //vehicle: vehicle
+        ) 
+      )
+    );
+    if (result == 'yes') {
+      _getUser();
+    }
+  }
 
   Widget _getContent() {
     return Column(
@@ -290,18 +346,24 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
         children: _user.vehicles.map((e) {
           return Card(
             child: InkWell(
-              onTap: () => _goVehicle(),
+              onTap: () => _goVehicle(e),
               child: Container(
                 margin: EdgeInsets.all(10),
                 padding: EdgeInsets.all(5),
                 child: Row(
                   children: <Widget>[
-                    FadeInImage(
-                      placeholder: AssetImage('assets/vehicle_logo.png'), 
-                      image: NetworkImage(e.imageFullPath),
-                      width: 80,
-                      height: 80,
+                    CachedNetworkImage(
+                      imageUrl: e.imageFullPath,
+                      errorWidget: (context, url, error) => Icon(Icons.error),
                       fit: BoxFit.cover,
+                      height: 80,
+                      width: 80,
+                      placeholder: (context, url) => Image(
+                        image: AssetImage('assets/vehicles_logo.png'),
+                        fit: BoxFit.cover,
+                        height: 80,
+                        width: 80,
+                      ),
                     ),
                     Expanded(
                       child: Container(
@@ -383,6 +445,4 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
       ),
     );
   }
-
-  void _goVehicle() {}
 }

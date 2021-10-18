@@ -3,11 +3,10 @@ import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:camera/camera.dart';
-//import 'package:camera/camera.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
-//import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/api_helper.dart';
@@ -512,7 +511,7 @@ class _UserScreenState extends State<UserScreen> {
           bottom: 0,
           left: 0,
           child: InkWell(
-           // onTap: () => _selectPicture(),
+            onTap: () => _selectPicture(),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(30),
               child: Container(
@@ -746,7 +745,7 @@ class _UserScreenState extends State<UserScreen> {
     }
   }
 
-  /*void _selectPicture() async {
+  void _selectPicture() async {
     final ImagePicker _picker = ImagePicker();
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -755,5 +754,5 @@ class _UserScreenState extends State<UserScreen> {
         _image = image;
       });
     }
-  }*/
+  }
 }

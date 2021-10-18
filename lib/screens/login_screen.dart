@@ -1,13 +1,15 @@
 import 'dart:convert';
-
-import 'package:email_validator/email_validator.dart';
-import 'package:http/http.dart'as http;
+import 'package:adaptive_dialog/adaptive_dialog.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
+import 'package:email_validator/email_validator.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:vehicles_app/components/loader_component.dart';
 import 'package:vehicles_app/helpers/constans.dart';
 import 'package:vehicles_app/models/token.dart';
-
-import 'home_screen.dart';
+import 'package:vehicles_app/screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({ Key? key }) : super(key: key);
@@ -17,11 +19,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-   String _email = 'luis@yopmail.com';
+  String _email = '';
   String _emailError = '';
   bool _emailShowError = false;
 
-  String _password = '123456';
+  String _password = '';
   String _passwordError = '';
   bool _passwordShowError = false;
 
@@ -33,8 +35,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:Stack(
-            children: <Widget>[
+      body: Stack(
+        children: <Widget>[
           SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -54,14 +56,16 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-  Widget _showLogo(){
+
+  Widget _showLogo() {
     return Image(
       image: AssetImage('assets/el-mecanico-logo.jpg'),
-      width: 200,
+      width: 300,
+      fit: BoxFit.fill,
     );
   }
 
-   Widget _showEmail() {
+  Widget _showEmail() {
     return Container(
       padding: EdgeInsets.all(10),
       child: TextField(
@@ -84,9 +88,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-    Widget _showPassword() {
+  Widget _showPassword() {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.all(10),
       child: TextField(
         obscureText: !_passwordShow,
         decoration: InputDecoration(
@@ -125,41 +129,15 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-
-    Widget _showButtons() {
+  Widget _showButtons() {
     return Container(
       margin: EdgeInsets.only(left: 10, right: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
-          Expanded(
-            child: ElevatedButton(
-              child: Text('Iniciar Sesión'),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                  (Set<MaterialState> states) {
-                    return Color(0xFF120E43);
-                  }
-                ),
-              ),
-
-              onPressed: () => _login(), 
-            ),
-          ),
+          _showLoginButton(),
           SizedBox(width: 20,),
-          Expanded(
-            child: ElevatedButton(
-              child: Text('Nuevo Usuario'),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                  (Set<MaterialState> states) {
-                    return Color(0xFFE03B8B);
-                  }
-                ),
-              ),
-              onPressed: () {}, 
-            ),
-          ),
+          _showRegisterButton(),
         ],
       ),
     );
@@ -177,6 +155,22 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _showLoader = true;
     });
+
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _showLoader = false;
+      });
+      await showAlertDialog(
+        context: context,
+        title: 'Error', 
+        message: 'Verifica que estes conectado a internet.',
+        actions: <AlertDialogAction>[
+            AlertDialogAction(key: null, label: 'Aceptar'),
+        ]
+      );    
+      return;
+    }
 
     Map<String, dynamic> request = {
       'userName': _email,
@@ -206,9 +200,13 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     var body = response.body;
+
+    if (_rememberme) {
+      _storeUser(body);
+    }
+
     var decodedJson = jsonDecode(body);
     var token = Token.fromJson(decodedJson);
-    
     Navigator.pushReplacement(
       context, 
       MaterialPageRoute(
@@ -217,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-    bool _validateFields() {
+  bool _validateFields() {
     bool isValid = true;
 
     if (_email.isEmpty) {
@@ -247,5 +245,42 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() { });
     return isValid;
   }
-}
 
+  Widget _showLoginButton() {
+    return Expanded(
+      child: ElevatedButton(
+        child: Text('Iniciar Sesión'),
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.resolveWith<Color>(
+            (Set<MaterialState> states) {
+              return Color(0xFF120E43);
+            }
+          ),
+        ),
+        onPressed: () => _login(), 
+      ),
+    );
+  }
+
+  Widget _showRegisterButton() {
+    return Expanded(
+      child: ElevatedButton(
+        child: Text('Nuevo Usuario'),
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.resolveWith<Color>(
+            (Set<MaterialState> states) {
+              return Color(0xFFE03B8B);
+            }
+          ),
+        ),
+        onPressed: () {}, 
+      ),
+    );
+  }
+
+  void _storeUser(String body) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isRemembered', true);
+    await prefs.setString('userBody', body);
+  }
+}

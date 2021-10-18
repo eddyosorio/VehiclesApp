@@ -1,12 +1,14 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:vehicles_app/models/token.dart';
+import 'package:vehicles_app/screens/document_types_screen.dart';
+import 'package:vehicles_app/screens/login_screen.dart';
 import 'package:vehicles_app/screens/procedures_screen.dart';
 import 'package:vehicles_app/screens/users_screen.dart';
 import 'package:vehicles_app/screens/vehicle_types_screen.dart';
-
 import 'brands_screen.dart';
-import 'document_types_screen.dart';
-
 
 class HomeScreen extends StatefulWidget {
   final Token token;
@@ -26,8 +28,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _getBody(),
       drawer: widget.token.user.userType == 0 
-        ? _getMechanicMenu() :null
-        //: _getCustomerMenu(),
+        ? _getMechanicMenu() 
+        : _getCustomerMenu(),
     );
   }
 
@@ -39,12 +41,19 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(150),
-            child: FadeInImage(
-              placeholder: AssetImage('assets/el-mecanico-logo.jpg'), 
-              image: NetworkImage(widget.token.user.imageFullPath),
+            child: CachedNetworkImage(
+              imageUrl: widget.token.user.imageFullPath,
+              errorWidget: (context, url, error) => Icon(Icons.error),
+              fit: BoxFit.cover,
               height: 300,
-              fit: BoxFit.cover
-            ),
+              width: 300,
+              placeholder: (context, url) => Image(
+                image: AssetImage('assets/el-mecanico-logo.jpg'),
+                fit: BoxFit.cover,
+                height: 300,
+                width: 300,
+              ),
+            )
           ),
           SizedBox(height: 30,),
           Center(
@@ -75,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
             leading: Icon(Icons.two_wheeler),
             title: const Text('Marcas'),
             onTap: () { 
-             Navigator.push(
+              Navigator.push(
                 context, 
                 MaterialPageRoute(
                   builder: (context) => BrandsScreen(token: widget.token,)
@@ -143,14 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ListTile(
             leading: Icon(Icons.logout),
             title: const Text('Cerrar Sesión'),
-            onTap: () { 
-              /*Navigator.pushReplacement(
-                context, 
-                MaterialPageRoute(
-                  builder: (context) => LoginScreen()
-                )
-              );*/
-            },
+            onTap: () => _logOut(),
           ),
         ],
       ),
@@ -164,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: <Widget>[
           DrawerHeader(
             child: Image(
-              image: AssetImage('assets/vehicles_logo.png'),
+              image: AssetImage('assets/el-mecanico-logo.jpg'),
             )
           ),
           ListTile(
@@ -184,17 +186,23 @@ class _HomeScreenState extends State<HomeScreen> {
           ListTile(
             leading: Icon(Icons.logout),
             title: const Text('Cerrar Sesión'),
-            onTap: () { 
-            /*  Navigator.pushReplacement(
-                context, 
-                MaterialPageRoute(
-                  builder: (context) => LoginScreen()
-                )
-              );*/
-            },
+            onTap: () => _logOut(),
           ),
         ],
       ),
     );
+  }
+
+  void _logOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isRemembered', false);
+    await prefs.setString('userBody', '');
+
+    Navigator.pushReplacement(
+      context, 
+      MaterialPageRoute(
+        builder: (context) => LoginScreen()
+      )
+    ); 
   }
 }
