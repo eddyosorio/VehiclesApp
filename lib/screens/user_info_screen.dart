@@ -85,7 +85,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                   height: 100,
                   width: 100,
                   placeholder: (context, url) => Image(
-                    image: AssetImage('assets/vehicles_logo.png'),
+                    image: AssetImage('assets/el-mecanico-logo.png'),
                     fit: BoxFit.cover,
                     height: 100,
                     width: 100,
